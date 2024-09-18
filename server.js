@@ -19,6 +19,40 @@ const pool = new Pool({
   password: 'admin'
 });
 
+// Function to initialize the database
+const initializeDatabase = async () => {
+  try {
+    // Create the "users" table if it doesn't exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        employeeId SERIAL PRIMARY KEY,
+	      employeeName TEXT not NULL,
+	      phone TEXT,
+	      hireDate DATE
+      )
+    `);
+
+    // Insert some initial data
+    const result = await pool.query(`SELECT * FROM users`);
+    if (result.rows.length === 0) {
+      await pool.query(`
+        INSERT INTO users (employeeName, phone, hireDate) VALUES
+        ('John Doe', '123 4567 890', '2013-02-25'),
+        ('John Mai', '123 4567 891', '2013-03-25'),
+        ('John Nguyen', '123 4567 892', '2013-04-25')
+      `);
+      console.log('Initial data inserted into the users table.');
+    } else {
+      console.log('Users table already contains data, skipping initialization.');
+    }
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+};
+
+// Initialize the database when the app starts
+initializeDatabase();
+
 // Route to get all users from the database
 app.get('/users', async (req, res) => {
   try {
